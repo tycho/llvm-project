@@ -15,13 +15,13 @@ mlgo_lower_models(
   "${LLVM_MAIN_SRC_DIR}/../mlir/test/Integration/Dialect/EmitC/inline-oz-test-model-tosa.mlir"
   MLDeps
 )
-if (DEFINED LLVM_HAVE_TF_AOT OR LLVM_HAVE_TFLITE)
+if (LLVM_HAVE_TF_AOT OR LLVM_HAVE_TFLITE)
   include(TensorFlowCompile)
   set(LLVM_INLINER_MODEL_PATH_DEFAULT "models/inliner-Oz")
 
   set(LLVM_INLINER_MODEL_CURRENT_URL "<UNSPECIFIED>" CACHE STRING "URL to download the LLVM inliner model")
 
-  if (DEFINED LLVM_HAVE_TF_AOT)
+  if (LLVM_HAVE_TF_AOT)
     tf_find_and_compile(
       ${LLVM_INLINER_MODEL_PATH}
       ${LLVM_INLINER_MODEL_CURRENT_URL}
