@@ -425,6 +425,7 @@
 // RUN:    /wd1234 \
 // RUN:    /Wv \
 // RUN:    /Wv:17 \
+// RUN:    /Zf \
 // RUN:    /Zm \
 // RUN:    /Zo \
 // RUN:    /Zo- \
