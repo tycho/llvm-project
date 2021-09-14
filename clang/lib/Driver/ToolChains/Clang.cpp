@@ -8726,11 +8726,16 @@ void Clang::ConstructJob(Compilation &C, const JobAction &JA,
   }
 
   // Make the compile command echo its inputs for /showFilenames.
-  if (Output.getType() == types::TY_Object &&
+  if ((Output.getType() == types::TY_Object ||
+       Output.getType() == types::TY_LTO_BC) &&
       Args.hasFlag(options::OPT__SLASH_showFilenames,
                    options::OPT__SLASH_showFilenames_, false)) {
     C.getJobs().getJobs().back()->PrintInputFilenames = true;
   }
+
+  // Claim /showFilenames so that clang-tidy doesn't complain
+  Args.ClaimAllArgs(options::OPT__SLASH_showFilenames);
+  Args.ClaimAllArgs(options::OPT__SLASH_showFilenames_);
 
   if (Arg *A = Args.getLastArg(options::OPT_pg))
     if (FPKeepKind == CodeGenOptions::FramePointerKind::None &&

@@ -13,9 +13,16 @@
 // RUN: mkdir -p %t.dir
 // RUN: %clang_cl -fno-integrated-cc1 --target=i686-pc-win32 /c /Fo%t.dir/ /showFilenames -- %s 2>&1 | FileCheck -check-prefix=show %s
 // RUN: %clang_cl -fno-integrated-cc1 --target=i686-pc-win32 /c /Fo%t.dir/ /showFilenames -- %s %S/Inputs/wildcard*.c 2>&1 | FileCheck -check-prefix=multiple %s
+// RUN: %clang_cl -fno-integrated-cc1 --target=i686-pc-win32 /c /Fo%t.dir/ /showFilenames -flto -- %s 2>&1 | FileCheck -check-prefix=show %s
 
 // RUN: %clang_cl -fno-integrated-cc1 --target=i686-pc-win32 /c /Fo%t.dir/ -- %s 2>&1 | FileCheck -check-prefix=noshow %s
 // RUN: %clang_cl -fno-integrated-cc1 --target=i686-pc-win32 /c /Fo%t.dir/ /showFilenames /showFilenames- -- %s 2>&1 | FileCheck -check-prefix=noshow %s
+
+
+// /showFilenames only affects compile jobs; it must not be reported as unused
+// when no object file is produced.
+// RUN: %clang_cl --target=i686-pc-win32 /Zs /showFilenames -### -- %s 2>&1 | FileCheck -check-prefix=unused %s
+// RUN: %clang_cl --target=i686-pc-win32 /Zs /showFilenames- -### -- %s 2>&1 | FileCheck -check-prefix=unused %s
 
 
 #pragma message "Hello"
@@ -30,3 +37,5 @@
 
 // noshow: warning: Hello
 // noshow-NOT: cl-showfilenames.c
+
+// unused-NOT: argument unused during compilation
