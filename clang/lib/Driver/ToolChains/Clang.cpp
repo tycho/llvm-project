@@ -5277,6 +5277,29 @@ static void ProcessVSRuntimeLibrary(const ToolChain &TC, const ArgList &Args,
     CmdArgs.push_back("--dependent-lib=softintrin");
 }
 
+// Code generation for MSVC targets relies on compiler-rt's builtins library for
+// some operations (for example _Float16 conversions without F16C, or 128-bit
+// integer division), but no linker pulls it in by default. Embed a directive so
+// that it is linked no matter which tool drives the link. Only do so when the
+// library is actually installed, so that toolchains shipped without
+// compiler-rt don't fail every link on a missing default library.
+static void addMSVCBuiltinsDependentLib(const ToolChain &TC,
+                                        const ArgList &Args,
+                                        ArgStringList &CmdArgs) {
+  if (!TC.getTriple().isWindowsMSVCEnvironment())
+    return;
+  if (!Args.hasFlag(options::OPT_frtlib_defaultlib,
+                    options::OPT_fno_rtlib_defaultlib, true) ||
+      Args.hasArg(options::OPT_fms_omit_default_lib) ||
+      Args.hasArgNoClaim(options::OPT_nostdlib, options::OPT_nodefaultlibs))
+    return;
+  std::string BuiltinsLib = TC.getCompilerRT(Args, "builtins");
+  if (!TC.getVFS().exists(BuiltinsLib))
+    return;
+  CmdArgs.push_back(Args.MakeArgString("--dependent-lib=" +
+                                       llvm::sys::path::filename(BuiltinsLib)));
+}
+
 void Clang::ConstructJob(Compilation &C, const JobAction &JA,
                          const InputInfo &Output, const InputInfoList &Inputs,
                          const ArgList &Args, const char *LinkingOutput) const {
@@ -7773,6 +7796,8 @@ void Clang::ConstructJob(Compilation &C, const JobAction &JA,
   if (Triple.isWindowsMSVCEnvironment() && !D.IsCLMode() &&
       Args.hasArg(options::OPT_fms_runtime_lib_EQ))
     ProcessVSRuntimeLibrary(getToolChain(), Args, CmdArgs);
+
+  addMSVCBuiltinsDependentLib(getToolChain(), Args, CmdArgs);
 
   // Handle -fgcc-version, if present.
   VersionTuple GNUCVer;
