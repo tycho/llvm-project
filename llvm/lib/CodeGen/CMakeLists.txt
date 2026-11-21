@@ -10,13 +10,13 @@ mlgo_lower_models(
   "${LLVM_MAIN_SRC_DIR}/../mlir/test/Integration/Dialect/EmitC/regalloc-eviction-test-model-tosa.mlir"
   MLDeps
 )
-if (DEFINED LLVM_HAVE_TF_AOT OR LLVM_HAVE_TFLITE)
+if (LLVM_HAVE_TF_AOT OR LLVM_HAVE_TFLITE)
   include(TensorFlowCompile)
   set(LLVM_RAEVICT_MODEL_PATH_DEFAULT "models/regalloc-eviction")
 
   set(LLVM_RAEVICT_MODEL_CURRENT_URL "<UNSPECIFIED>" CACHE STRING "URL to download the LLVM register allocator eviction model")
 
-  if (DEFINED LLVM_HAVE_TF_AOT)
+  if (LLVM_HAVE_TF_AOT)
     tf_find_and_compile(
       ${LLVM_RAEVICT_MODEL_PATH}
       ${LLVM_RAEVICT_MODEL_CURRENT_URL}
